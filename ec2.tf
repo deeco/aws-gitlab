@@ -6,17 +6,15 @@ resource "aws_security_group" "ctops" {
     from_port = 80
     to_port = 80
     protocol = "tcp"
-    cidr_blocks = ["92.51.249.9/32", "89.100.106.249/32"]
+    cidr_blocks = ["92.51.251.123/32", "89.100.106.249/32"]
   }
 
   ingress {
     from_port = 22
     to_port = 22
     protocol = "tcp"
-    cidr_blocks = ["92.51.249.9/32", "89.100.106.249/32"]
+    cidr_blocks = ["92.51.251.123/32", "89.100.106.249/32"]
   }
-
-
 
   egress {
     from_port       = 80
@@ -45,8 +43,19 @@ resource "aws_instance" "ctops1" {
   associate_public_ip_address = true
 
   tags = {
-      Name = "ctops-APP"
+      Name = "ctops-gitlab"
+      BUSINESSUNIT = "CTOPS"
+      APPLICATIONENV = "GITLAB"
+      APPLICATIONROLE = "CICD"
+      OWNEREMAIL = "dgowran@informatica.com"
+      RUNNINGSCHEDULE = "00:00:23:59:1-7"
+      NAME = "GITLAB"
+      POD = "CTOPS"
+      BUSINESSENTITY = "CTOPS"
+      SERVICENAME = "CTOPS"
+      ALERTGROUP = "CTOPS"
     }
+
 }
 
 resource "aws_key_pair" "terraform_ec2_key" {
