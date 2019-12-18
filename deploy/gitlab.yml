@@ -1,0 +1,51 @@
+- name: Install Docker
+
+  hosts: all
+
+  become: yes
+  become_method: sudo
+
+  tasks:
+
+  - name: Check if gitlab folder exists
+    stat:
+      path: gitlab
+    register: gitlab_home
+
+  - name: Clean up docker-compose
+    command: >
+       docker-compose down
+    args:
+       chdir: gitlab
+    when: gitlab_home.stat.exists
+
+  - name: Delete docker working-dir
+    file:
+       state: absent
+       path: gitlab
+    when: gitlab_home.stat.exists
+
+  - name: Copy gitlab working-dir
+    synchronize:
+       src: ./gitlab/
+       dest: gitlab
+  - name: Copy certs to load 
+    synchronize:
+       src: ./gitlab/nginx-config/
+       dest: /usr/share/ca-certificates/
+  
+  - name: load certs for artifactory
+    shell: sudo update-ca-certificates
+
+  - name: Generate a Self Signed OpenSSL certificate
+    command: >
+       openssl req -subj '/CN=gitlab' -x509 -newkey rsa:4096 -nodes
+       -keyout gitlab.pem -out gitlab.pem -days 999
+    args:
+       chdir: ./gitlab/nginx-config/
+
+  - name: Call docker-compose to run gitlab-stake
+    command: >
+       docker-compose -f docker-compose.yml up -d
+    args:
+       chdir: ./gitlab/
